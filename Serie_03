@@ -1,0 +1,71 @@
+import math
+import time
+
+graph = {
+    (0,0) : [((1,0),1), ((0,1),1)],
+    (0,1) : [((0,0),1), ((1,1),1)],
+    (0,3) : [((1,3),1), ((0,4),math.inf)],
+    
+    (1,0) : [((0,0),1), ((1,1),1)],
+    (1,1) : [((0,1),1), ((1,0),1), ((2,1),1), ((1,2),1)],
+    (1,2) : [((1,3),1), ((1,1),1)],
+    (1,3) : [((1,2),1), ((1,4),1), ((0,3),1)],
+    (1,4) : [((0,4),math.inf), ((2,4),1)],
+    
+    (2,1) : [((1,1),1), ((3,1),1)],
+    (2,4) : [((1,4),1), ((3,4),1)],
+
+    (3,0) : [((3,1),1), ((4,0),1)],
+    (3,1) : [((3,0),1), ((2,1),1), ((4,1),1), ((3,2), math.inf)],
+    (3,3) : [((3,4),1), ((4,3),1), ((3,2),math.inf)],
+    (3,4) : [((2,4),1), ((3,3),1), ((4,4),1)],
+
+    (4,0) : [((3,0),1), ((4,1),1)],
+    (4,1) : [((4,0),1), ((3,1),1), ((4,2),1)],
+    (4,2) : [((4,1),1), ((3,2),math.inf), ((4,3),1)],
+    (4,3) : [((3,3),1), ((4,4),1), ((4,2),1)],
+    (4,4) : [((4,4),1), ((4,3),1), ((3,4),1)],
+}
+
+def dfs_avec_count(graph, start, goal, count=0, path=None, visited=None):
+    if path is None:
+        path = []  
+    if visited is None:
+        visited = set()
+        
+    if start in visited:  # Éviter les boucles infinies
+        return float('inf'), None
+    
+    path = path + [start]  
+    visited.add(start)
+
+    if start == goal:
+        return count, path  
+
+    min_cost = float('inf')
+    best_path = None  
+
+    for neighbor, cost in graph[start]:
+        if cost == math.inf:  # Éviter les chemins impossibles
+            continue
+        
+        path_cost, current_path = dfs_avec_count(graph, neighbor, goal, count + cost, path, visited.copy())
+        if path_cost < min_cost:
+            min_cost = path_cost
+            best_path = current_path  
+
+    return (min_cost, best_path) if best_path else (float('inf'), None)
+
+start_time = time.time()
+cost, path = dfs_avec_count(graph, (0,0), (3,4))
+end_time = time.time()
+
+
+
+if path:
+    print(f"Le coût minimum pour atteindre le but est : {cost}")
+    print(f"Le chemin suivi est : {' -> '.join(map(str, path))}")
+    print(f"temps = {end_time - start_time}") 
+else:
+    print("Aucun chemin trouvé.")
+
