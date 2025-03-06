@@ -69,3 +69,99 @@ if path:
 else:
     print("Aucun chemin trouvé.")
 
+
+
+
+
+
+
+
+
+
+
+def bfs(graph, start, goal):
+# the queue contains all the paths we can expand upon.
+# here we store for each element of the queue:
+# - the current node to expand from
+# - the full path
+# - the cumulated path cost
+    queue = [(start, [start], 0)]
+    visited = set() # set to track visited nodes
+    while queue:
+    # we want to pick the node which comes first in alphabetic order
+        queue.sort()
+        node, path, cost = queue.pop(0) # get and remove the first element
+        # we found the goal, return the path
+        if node == goal:
+            return path, cost
+        if node not in visited:
+            visited.add(node)
+            for neighbor, weight in graph.get(node, []):
+            # create a new path including the neighbor
+                new_path = path + [neighbor]
+                # enqueue new path with updated cost and new expandable node
+                queue.append((neighbor, new_path, cost + weight))
+    return None # No path found
+start_time = time.time()
+path, cost = bfs(graph, start=(0,0), goal=(3,4))
+end_time = time.time()
+
+print(f"Le coût pour atteindre le but est : {cost}")
+print(f"Le chemin suivi est : {' -> '.join(map(str, path))}")
+print(f"temps = {end_time - start_time}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+def heuristique(node, goal):
+    """Calcul de la distance de Manhattan (heuristique) entre le nœud actuel et le but."""
+    return abs(node[0] - goal[0]) + abs(node[1] - goal[1])
+
+def bfs_with_heuristic(graph, start, goal):
+    """Recherche en largeur avec une heuristique (un peu comme A*)."""
+    
+    # La queue contient (nœud actuel, chemin jusqu'ici, coût cumulé, heuristique)
+    queue = [(start, [start], 0, heuristique(start, goal))]
+    visited = set()  # Set pour suivre les nœuds déjà explorés
+
+    while queue:
+        # Trier la queue en fonction de l'heuristique + coût cumulé (f = g + h)
+        queue.sort(key=lambda x: x[2] + x[3])  # Trier par f(n) = g(n) + h(n)
+        
+        node, path, cost, _ = queue.pop(0)  # Récupérer le premier élément de la queue
+        
+        # Si on a atteint le but, retourner le chemin et le coût
+        if node == goal:
+            return path, cost
+
+        if node not in visited:
+            visited.add(node)  # Marquer le nœud comme visité
+            for neighbor, weight in graph.get(node, []):
+                # Créer un nouveau chemin incluant le voisin
+                new_path = path + [neighbor]
+                # Ajouter le voisin à la queue avec le coût mis à jour
+                queue.append((neighbor, new_path, cost + weight, heuristique(neighbor, goal)))
+
+    return None  # Aucun chemin trouvé
+
+start_time = time.time()
+# Exécution de BFS avec heuristique pour trouver le chemin de (0, 0) à (3, 4)
+path, cost = bfs_with_heuristic(graph, start=(0, 0), goal=(3, 4))
+end_time = time.time()
+
+if path:
+    print(f"Le coût pour atteindre le but est : {cost}")
+    print(f"Le chemin suivi est : {' -> '.join(map(str, path))}")
+    print(f"temps = {end_time - start_time}")
+else:
+    print("Aucun chemin trouvé.")
+
